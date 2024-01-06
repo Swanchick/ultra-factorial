@@ -2,6 +2,13 @@
 #include <iostream>
 #include <string>
 
+DNumber::DNumber() {
+	length = 1;
+	
+	pNumber = new int[length];
+	pNumber[0] = 0;
+}
+
 DNumber::DNumber(std::string n) {
 	pNumber = convertString(n);
 }
@@ -54,9 +61,8 @@ void DNumber::Add(DNumber n) {
 		
 		if (sum >= 10) {
 			next = sum;
+			sum -= 10;
 		}
-
-		sum -= 10;
 
 		interResultNumber[currentIndex1] = sum;
 	}
@@ -79,6 +85,67 @@ void DNumber::Add(DNumber n) {
 	}
 
 	pNumber = resultNumber;
+	
+	delete[] interResultNumber;
+	delete[] n1Numbers;
+	delete[] n2Numbers;
+}
+
+void DNumber::Multiply(DNumber n) {
+	if (length < n.GetLength()) {
+		n.Multiply(*this);
+		length = n.GetLength();
+		pNumber = n.GetNumber();
+
+		return;
+	}
+
+	int n2Length = n.GetLength();
+	int newLength = length + n2Length;
+	
+	int* n2Numbers = n.GetNumber();
+
+	int** sumMatrix = new int*[n2Length];
+	
+	std::cout << newLength << " new lenght" << std::endl;
+
+	for (int j = 0; j < n2Length; j++) {
+		int n2Index = n2Length - j - 1;
+		int number2 = n2Numbers[n2Index];
+		
+		sumMatrix[j] = new int[newLength];
+
+		int next = 0;
+
+		for (int i = 0; i < newLength; i++) {
+			if (i >= length) {
+				sumMatrix[j][newLength - i - 1] = next;
+
+				continue;
+			}
+			
+			int n1Index = length - i - 1;
+			int number1 = pNumber[n1Index];
+
+			int product = number1 * number2;
+
+			if (next > 0) {
+				product += next;
+
+				next = 0;
+			}
+
+			if (product >= 10) {
+				int resultNumber = product / 10;
+				next = resultNumber;
+				resultNumber = resultNumber * 10;
+
+				product -= resultNumber;
+			}
+
+			sumMatrix[j][newLength - i - 1] = product;
+		}
+	}
 }
 
 void DNumber::Show() {
