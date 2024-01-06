@@ -1,6 +1,7 @@
 #include "dnumber.h"
 #include <iostream>
 #include <string>
+#include <cmath>
 
 DNumber::DNumber() {
 	length = 1;
@@ -11,6 +12,11 @@ DNumber::DNumber() {
 
 DNumber::DNumber(std::string n) {
 	pNumber = convertString(n);
+}
+
+DNumber::DNumber(int* number, int l) {
+	pNumber = number;
+	length = l;
 }
 
 int* DNumber::convertString(std::string n) {
@@ -86,7 +92,6 @@ void DNumber::Add(DNumber n) {
 
 	pNumber = resultNumber;
 	
-	delete[] interResultNumber;
 	delete[] n1Numbers;
 	delete[] n2Numbers;
 }
@@ -100,31 +105,46 @@ void DNumber::Multiply(DNumber n) {
 		return;
 	}
 
+	if (n.GetLength() == 1 && n.GetNumber()[0] == 0) {
+		length = 1;
+		pNumber = new int[length];
+		pNumber[0] = 0;
+
+		return;
+	}
+
 	int n2Length = n.GetLength();
 	int newLength = length + n2Length;
 	
 	int* n2Numbers = n.GetNumber();
 
-	int** sumMatrix = new int*[n2Length];
-	
-	std::cout << newLength << " new lenght" << std::endl;
+	DNumber result;
 
 	for (int j = 0; j < n2Length; j++) {
 		int n2Index = n2Length - j - 1;
 		int number2 = n2Numbers[n2Index];
 		
-		sumMatrix[j] = new int[newLength];
+		int* sumMatrix = new int[newLength];
 
 		int next = 0;
 
 		for (int i = 0; i < newLength; i++) {
-			if (i >= length) {
-				sumMatrix[j][newLength - i - 1] = next;
+			int newIndex = newLength - i - 1;
+			
+			if (i < j) {
+				sumMatrix[newIndex] = 0;
+				
+				continue;
+			}
+
+			if (i >= length + j) {
+				sumMatrix[newIndex] = next;
+				next = 0;
 
 				continue;
 			}
 			
-			int n1Index = length - i - 1;
+			int n1Index = length - i - 1 + j;
 			int number1 = pNumber[n1Index];
 
 			int product = number1 * number2;
@@ -143,9 +163,32 @@ void DNumber::Multiply(DNumber n) {
 				product -= resultNumber;
 			}
 
-			sumMatrix[j][newLength - i - 1] = product;
+			sumMatrix[newIndex] = product;
 		}
+
+		DNumber interResult(sumMatrix, newLength);
+		
+		result.Add(interResult);
 	}
+
+	result.ClearNulls();
+
+	length = result.GetLength();
+	pNumber = result.GetNumber();
+}
+
+void DNumber::Factorial() {
+	int n1Number = GetInt();
+	DNumber result("1");
+
+	for (int i = 0; i < n1Number; i++) {
+		DNumber n(std::to_string(i + 1));
+
+		result.Multiply(n);
+	}
+
+	length = result.GetLength();
+	pNumber = result.GetNumber();
 }
 
 void DNumber::Show() {
@@ -154,6 +197,51 @@ void DNumber::Show() {
 	}
 
 	std::cout << std::endl;
+}
+
+void DNumber::ClearNulls() {
+	int newLength = 0;
+	bool prevNull = false;
+
+	for (int i = 0; i < length; i++) {
+		int number = pNumber[i];
+		
+		if (i == 0 && number == 0) {
+			newLength++;
+			prevNull = true;
+
+			continue;
+		}
+
+		if (number == 0 && prevNull) {
+			newLength++;
+
+			continue;
+		}
+
+		prevNull = false;
+	}
+
+	int resultLength = length - newLength;
+	
+	int* result = new int[resultLength];
+
+	for (int i = 0; i < resultLength; i++) {
+		result[i] = pNumber[i + newLength];
+	}
+
+	length = resultLength;
+	pNumber = result;
+}
+
+int DNumber::GetInt() {
+	int result = 0;
+
+	for (int i = 0; i < length; i++) {
+		result += pow(10, i) * pNumber[length - i - 1];
+	}
+
+	return result;
 }
 
 int DNumber::GetLength() {
