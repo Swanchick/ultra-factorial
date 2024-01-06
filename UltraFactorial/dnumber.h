@@ -9,8 +9,8 @@ public:
 	DNumber(std::string n);
 	DNumber(int* pNumber, int length);
 
-	void Add(DNumber n);
-	void Multiply(DNumber n);
+	void Add(DNumber& n);
+	void Multiply(DNumber& n);
 	void Factorial();
 	void Show();
 	void ClearNulls();

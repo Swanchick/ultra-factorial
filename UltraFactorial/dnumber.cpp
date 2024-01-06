@@ -32,7 +32,7 @@ int* DNumber::convertString(std::string n) {
 	return number;
 }
 
-void DNumber::Add(DNumber n) {
+void DNumber::Add(DNumber& n) {
 	if (length < n.GetLength()) {
 		n.Add(*this);
 		length = n.GetLength();
@@ -42,8 +42,10 @@ void DNumber::Add(DNumber n) {
 	}
 
 	int next = 0;
-	int* n1Numbers = GetNumber();
-	int* n2Numbers = n.GetNumber();
+	int* n1Numbers = nullptr;
+	n1Numbers = GetNumber();
+	int* n2Numbers = nullptr;
+	n2Numbers = n.GetNumber();
 
 	int* interResultNumber = new int[length];
 	int* resultNumber = nullptr;
@@ -73,7 +75,7 @@ void DNumber::Add(DNumber n) {
 		interResultNumber[currentIndex1] = sum;
 	}
 
-	if (next >= 10) {
+	if (next > 10) {
 		int newLength = length + 1;
 
 		resultNumber = new int[newLength];
@@ -85,18 +87,19 @@ void DNumber::Add(DNumber n) {
 		}
 
 		length = newLength;
+
+		delete[] interResultNumber;
 	}
 	else {
 		resultNumber = interResultNumber;
 	}
 
+	delete pNumber;
+	pNumber = nullptr;
 	pNumber = resultNumber;
-	
-	delete[] n1Numbers;
-	delete[] n2Numbers;
 }
 
-void DNumber::Multiply(DNumber n) {
+void DNumber::Multiply(DNumber& n) {
 	if (length < n.GetLength()) {
 		n.Multiply(*this);
 		length = n.GetLength();
@@ -174,6 +177,9 @@ void DNumber::Multiply(DNumber n) {
 	result.ClearNulls();
 
 	length = result.GetLength();
+	
+	delete pNumber;
+	pNumber = nullptr;
 	pNumber = result.GetNumber();
 }
 
@@ -185,6 +191,8 @@ void DNumber::Factorial() {
 		DNumber n(std::to_string(i + 1));
 
 		result.Multiply(n);
+
+		std::cout << i + 1 << std::endl;
 	}
 
 	length = result.GetLength();
